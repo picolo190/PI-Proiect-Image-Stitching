@@ -16,16 +16,25 @@ void keyPointDetection(Mat img1, Mat img2) {
 	imshow("SURF Keypoints2", img_keypoints2);
 }
 
-void cornerHarris(Mat img1, string s)
+void cornerHarris_new(Mat img1, string s)
 {
-	int blockSize = 2;
-	int thresh = 200;
-	int apertureSize = 3;
+	int blockSize = 2, apertureSize = 3, thresh = 150;
 	double k = 0.04;
 	Mat dst = Mat::zeros(img1.size(), CV_32FC1);
+
+	//Sharp the image so the corners are much more easier to be found
+	Mat sharpen_img;
+	GaussianBlur(img1, sharpen_img, Size(0, 0), 3);
+	addWeighted(img1, 1.5, sharpen_img, -0.5, 0, sharpen_img);
+	imshow("sharpen", sharpen_img);
+
+	//Creating the grayscale image
 	Mat img1_gray;
-	cvtColor(img1, img1_gray, COLOR_BGR2GRAY);
+	cvtColor(sharpen_img, img1_gray, COLOR_BGR2GRAY);
+
+	//Applying the Harris corner algorithm
 	cornerHarris(img1_gray, dst, blockSize, apertureSize, k);
+
 	Mat dst_norm, dst_norm_scaled;
 	normalize(dst, dst_norm, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
 	convertScaleAbs(dst_norm, dst_norm_scaled);
@@ -39,5 +48,7 @@ void cornerHarris(Mat img1, string s)
 			}
 		}
 	}
+
+	//Display the image 
 	imshow(s, dst_norm_scaled);
 }

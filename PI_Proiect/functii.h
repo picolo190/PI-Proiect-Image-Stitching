@@ -12,4 +12,4 @@ using namespace cv;
 using namespace cv::xfeatures2d;
 
 void keyPointDetection(Mat img1 ,Mat img2);
-void cornerHarris(Mat img1, string s);
+void cornerHarris_new(Mat img1, string s);

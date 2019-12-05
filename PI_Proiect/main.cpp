@@ -14,12 +14,17 @@ int main(void)
 		return -1;
 	}
 
-	//namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
-	imshow("img", image_1);
-	imshow("img2", image_2);
+	//namedWindow("Image 1", WINDOW_AUTOSIZE); // Create a window for display.
+	//imshow("img", image_1);
+
+	//namedWindow("Image 2", WINDOW_AUTOSIZE); // Create a window for display.
+	//imshow("img2", image_2);
 	
-	cornerHarris(image_1, "corner1");
-	cornerHarris(image_2, "corner2");
+	//namedWindow("Image_corner 1", WINDOW_AUTOSIZE); // Create a window for display.
+	cornerHarris_new(image_1, "corner1");
+
+	//namedWindow("Image_corner 2", WINDOW_AUTOSIZE); // Create a window for display.
+	cornerHarris_new(image_2, "corner2");
 	//keyPointDetection(image_1, image_2);
 
 	waitKey(0);
