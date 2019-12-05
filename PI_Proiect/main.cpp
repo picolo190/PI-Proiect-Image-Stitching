@@ -18,6 +18,8 @@ int main(void)
 	imshow("img", image_1);
 	imshow("img2", image_2);
 	
+	cornerHarris(image_1, "corner1");
+	cornerHarris(image_2, "corner2");
 	//keyPointDetection(image_1, image_2);
 
 	waitKey(0);
