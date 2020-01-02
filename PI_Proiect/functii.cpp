@@ -1,23 +1,74 @@
 #include "functii.h"
 
 
-void keyPointDetection(Mat img1, Mat img2) {
+vector<KeyPoint> keyPointDetection(Mat img1)
+{
 	int minHessian = 400;
 	Ptr<SURF> detector = SURF::create(minHessian);
-	std::vector<KeyPoint> keypoints1, keypoints2;
-	detector->detect(img1, keypoints1);
-	detector->detect(img2, keypoints2);
+	std::vector<KeyPoint> keypoints;
+	detector->detect(img1, keypoints);
 
-	//-- Draw keypoints
-	Mat img_keypoints1, img_keypoints2;
-	drawKeypoints(img1, keypoints1, img_keypoints1);
-	drawKeypoints(img2, keypoints2, img_keypoints2);
-
-	//-- Show detected (drawn) keypoints
-	imshow("SURF Keypoints1", img_keypoints1);
-	imshow("SURF Keypoints2", img_keypoints2);
+	return keypoints;
 }
 
+Mat calculateDescriptors(vector<KeyPoint> kp1, Mat gray_image1)
+{
+	int minHessian = 400;
+	Ptr<SURF> detector = SURF::create(minHessian);
+	Mat descriptor;
+
+	detector->compute(gray_image1, kp1, descriptor);
+	
+	return descriptor;
+}
+
+vector<DMatch> descriptorMatching(Mat descriptor1, Mat descriptor2)
+{
+	FlannBasedMatcher matcher;
+	vector< DMatch > matches;
+	matcher.match(descriptor1, descriptor2, matches);
+
+	double max_dist = 0;
+	double min_dist = 100;
+
+	for (int i = 0; i < descriptor1.rows; i++)
+	{
+		double dist = matches[i].distance;
+		if (dist < min_dist) min_dist = dist;
+		if (dist > max_dist) max_dist = dist;
+	}
+
+	vector< DMatch > good_matches;
+
+	for (int i = 0; i < descriptor1.rows; i++)
+	{
+		if (matches[i].distance < 3 * min_dist)
+		{
+			good_matches.push_back(matches[i]);
+		}
+	}
+
+	return good_matches;
+}
+
+vector<Point2f> extractKp(vector<DMatch> matches, vector<KeyPoint> kp)
+{
+	vector<Point2f> matching_points;
+
+	for (int i = 0; i < matches.size(); i++)
+	{
+		matching_points.push_back(kp[matches[i].queryIdx].pt);
+	}
+
+	return matching_points;
+}
+
+
+
+/*
+	*************************************************
+
+*/
 vector<KeyPoint> cornerHarris_new(Mat img1, string s)
 {
 	int blockSize = 2, apertureSize = 3, thresh = 175;
