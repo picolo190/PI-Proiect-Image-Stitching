@@ -1,105 +1,123 @@
 #include "functii.h"
 
 
-vector<KeyPoint> keyPointDetection(Mat img1)
+void checkImage(Mat img) 
 {
-	int minHessian = 400;
-	Ptr<SURF> detector = SURF::create(minHessian);
-	std::vector<KeyPoint> keypoints;
-	detector->detect(img1, keypoints);
-
-	return keypoints;
+	//**** check the images read ****
+	if (img.empty())
+	{
+		cout << "Could not open or find the image" << endl;
+		exit(-1);
+	}
 }
 
-Mat calculateDescriptors(vector<KeyPoint> kp1, Mat gray_image1)
+descriptorAndKeypoints detectAndCompute(Mat img1)
 {
+	//Set the hessian threshold; The higher it is, the less keypoints get detected
 	int minHessian = 400;
-	Ptr<SURF> detector = SURF::create(minHessian);
-	Mat descriptor;
 
-	detector->compute(gray_image1, kp1, descriptor);
+	descriptorAndKeypoints result;
 	
-	return descriptor;
+	//Create a surf instance
+	Ptr<SURF> surf_method = SURF::create(minHessian);
+
+	surf_method->detect(img1, result.keypoints);
+
+	surf_method->compute(img1, result.keypoints, result.descriptor);
+
+	return result;	
 }
 
-vector<DMatch> descriptorMatching(Mat descriptor1, Mat descriptor2)
+
+Mat calculateHomography(descriptorAndKeypoints img1_kp_desc, descriptorAndKeypoints img2_kp_desc)
 {
+	//Matching descriptor vectors using FLANN matcher
 	FlannBasedMatcher matcher;
 	vector< DMatch > matches;
-	matcher.match(descriptor1, descriptor2, matches);
+	matcher.match(img1_kp_desc.descriptor, img2_kp_desc.descriptor, matches);
 
 	double max_dist = 0;
 	double min_dist = 100;
 
-	for (int i = 0; i < descriptor1.rows; i++)
+	//--Quick calculation of min-max distances between keypoints
+	for (int i = 0; i < img1_kp_desc.descriptor.rows; i++)
 	{
 		double dist = matches[i].distance;
-		if (dist < min_dist) min_dist = dist;
-		if (dist > max_dist) max_dist = dist;
+		if (dist < min_dist)
+		{ 
+			min_dist = dist; 
+		}
+		if (dist > max_dist)
+		{
+			max_dist = dist;
+		}
 	}
 
-	vector< DMatch > good_matches;
+	printf("-- Max dist : %f \n", max_dist);
+	printf("-- Min dist : %f \n", min_dist);
 
-	for (int i = 0; i < descriptor1.rows; i++)
+	//--Use only "good" matches (i.e. whose distance is less than 3 X min_dist )
+	vector<DMatch> good_matches;
+
+	for (int i = 0; i < matches.size(); i++)
 	{
-		if (matches[i].distance < 3 * min_dist)
+		if (matches[i].distance < 100 * min_dist)
 		{
 			good_matches.push_back(matches[i]);
 		}
 	}
 
-	return good_matches;
-}
+	vector< Point2f > img1_points;
+	vector< Point2f > img2_points;
 
-vector<Point2f> extractKp(vector<DMatch> matches, vector<KeyPoint> kp)
-{
-	vector<Point2f> matching_points;
-
-	for (int i = 0; i < matches.size(); i++)
+	for (int i = 0; i < good_matches.size(); i++)
 	{
-		matching_points.push_back(kp[matches[i].queryIdx].pt);
+		//--Get the keypoints from the good matches
+		img1_points.push_back(img1_kp_desc.keypoints[good_matches[i].queryIdx].pt);
+		img2_points.push_back(img2_kp_desc.keypoints[good_matches[i].trainIdx].pt);
 	}
 
-	return matching_points;
+	Mat homography = findHomography(img1_points, img2_points, RANSAC);
+
+	return homography;
 }
 
 
-
-/*
-	*************************************************
-
-*/
-vector<KeyPoint> cornerHarris_new(Mat img1, string s)
+Mat stitchImage(Mat img1, Mat img2, Mat H)
 {
-	int blockSize = 2, apertureSize = 3, thresh = 175;
-	double k = 0.04;
-	Mat dst = Mat::zeros(img1.size(), CV_32FC1);
-	vector<KeyPoint> keypoints;
+	Mat result;
 
-	//Creating the grayscale image
-	Mat img1_gray;
-	cvtColor(img1, img1_gray, COLOR_BGR2GRAY);
+	warpPerspective(img1, result, H, Size(img1.cols + img2.cols, img1.rows));
 
-	//Applying the Harris corner algorithm
-	cornerHarris(img1_gray, dst, blockSize, apertureSize, k);
+	imshow("result", result);
 
-	Mat dst_norm, dst_norm_scaled;
-	normalize(dst, dst_norm, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
-	convertScaleAbs(dst_norm, dst_norm_scaled);
-	for (int i = 0; i < dst_norm.rows; i++)
+	Mat half(result, Rect(0, 0, img2.cols, img2.rows));
+
+	imshow("res", half);
+
+	img2.copyTo(half);
+
+	imshow("res1", half);
+	// vector with all non-black point positions
+	vector<Point> nonBlackList;
+	nonBlackList.reserve(result.rows*result.cols);
+
+	// add all non-black points to the vector
+	// there are more efficient ways to iterate through the image
+	for (int j = 0; j < result.rows; ++j)
 	{
-		for (int j = 0; j < dst_norm.cols; j++)
+		for (int i = 0; i < result.cols; ++i)
 		{
-			if ((int)dst_norm.at<float>(i, j) > thresh)
+			// if not black: add to the list
+			if (result.at<Vec3b>(j, i) != Vec3b(0, 0, 0))
 			{
-				circle(dst_norm_scaled, Point(j, i), 5, Scalar(0), 2, 8, 0);
-				KeyPoint aux(i, j, 1);
-				keypoints.push_back(aux);
+				nonBlackList.push_back(Point(i, j));
 			}
 		}
 	}
 
-	//Display the image 
-	imshow(s, dst_norm_scaled);
-	return keypoints;
+	// create bounding rect around those points
+	Rect bb = boundingRect(nonBlackList);
+
+	return result(bb);
 }
