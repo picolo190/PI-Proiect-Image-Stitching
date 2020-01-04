@@ -1,6 +1,5 @@
 #include "functii.h"
 
-
 void checkImage(Mat img) 
 {
 	//**** check the images read ****
@@ -77,7 +76,7 @@ Mat calculateHomography(descriptorAndKeypoints img1_kp_desc, descriptorAndKeypoi
 		img2_points.push_back(img2_kp_desc.keypoints[good_matches[i].trainIdx].pt);
 	}
 
-	Mat homography = findHomography(img1_points, img2_points, RANSAC);
+	Mat homography = findHomography(img2_points, img1_points, RANSAC);
 
 	return homography;
 }
@@ -87,17 +86,12 @@ Mat stitchImage(Mat img1, Mat img2, Mat H)
 {
 	Mat result;
 
-	warpPerspective(img1, result, H, Size(img1.cols + img2.cols, img1.rows));
-
-	imshow("result", result);
+	warpPerspective(img2, result, H, Size(img1.cols + img2.cols, img1.rows));
 
 	Mat half(result, Rect(0, 0, img2.cols, img2.rows));
 
-	imshow("res", half);
+	img1.copyTo(half);
 
-	img2.copyTo(half);
-
-	imshow("res1", half);
 	// vector with all non-black point positions
 	vector<Point> nonBlackList;
 	nonBlackList.reserve(result.rows*result.cols);
@@ -120,4 +114,14 @@ Mat stitchImage(Mat img1, Mat img2, Mat H)
 	Rect bb = boundingRect(nonBlackList);
 
 	return result(bb);
+}
+
+void saveImage(Mat img, string path)
+{
+	bool success = imwrite(path, img);
+
+	if (!success)
+	{
+		cout << "\nThe image set to be saved at the path:" << path << " was not successfuly saved.";
+	}
 }

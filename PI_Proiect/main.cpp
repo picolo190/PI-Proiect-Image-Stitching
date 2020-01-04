@@ -1,10 +1,9 @@
 #include "functii.h"
 
-
 int main(void)
 {
-	string image_name_1("Images/Building_1.jpg");
-	string image_name_2("Images/Building_2.jpg");
+	string image_name_1("Images/uni_1.jpeg");
+	string image_name_2("Images/uni_2.jpeg");
 	Mat image_1 = imread(image_name_1);
 	Mat image_2 = imread(image_name_2);
 
@@ -30,6 +29,9 @@ int main(void)
 
 	//Display the result
 	imshow("window", final_image);
+
+	string path("./Images/result2.png");
+	saveImage(final_image, path);
 
 	waitKey(0);
 	return 0;

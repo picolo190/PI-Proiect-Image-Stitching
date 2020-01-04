@@ -39,4 +39,13 @@ descriptorAndKeypoints detectAndCompute(Mat img1);
 */
 Mat calculateHomography(descriptorAndKeypoints img1_kp_desc, descriptorAndKeypoints img2_kp_desc);
 
+/*
+	The stitchImage receives two images and the homography matrix. It tries to apply the homography to one on those images
+	to change the perspective on it so it can be stitched to the second image.
+*/
 Mat stitchImage(Mat img1, Mat img2, Mat H);
+
+/*
+	This function saves the image to a file; it receives an image and a string representing the path
+*/
+void saveImage(Mat img, string path);
