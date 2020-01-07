@@ -1,4 +1,4 @@
-# Image stitching using opencv
+# Image stitching using opencv_contrib
 
 
 ## Getting Started
