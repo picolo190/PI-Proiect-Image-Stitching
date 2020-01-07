@@ -78,5 +78,6 @@ The algorithm works only if the user inputs two images matching the description:
 ## Resources and references
 
 [Image Panorama Stitching with OpenCV](https://towardsdatascience.com/image-panorama-stitching-with-opencv-2402bde6b46c)
+
 [Image Stitching with OpenCV](https://www.pyimagesearch.com/2018/12/17/image-stitching-with-opencv-and-python/)
 
