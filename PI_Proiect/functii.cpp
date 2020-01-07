@@ -60,7 +60,7 @@ Mat calculateHomography(descriptorAndKeypoints img1_kp_desc, descriptorAndKeypoi
 
 	for (int i = 0; i < matches.size(); i++)
 	{
-		if (matches[i].distance < 100 * min_dist)
+		if (matches[i].distance < 3 * min_dist)
 		{
 			good_matches.push_back(matches[i]);
 		}
