@@ -46,7 +46,6 @@ int main(void)
 		}
 	}
 
-
 	saveImage(final_image, path);
 
 	waitKey(0);
