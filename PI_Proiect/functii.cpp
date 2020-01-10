@@ -52,8 +52,8 @@ Mat calculateHomography(descriptorAndKeypoints img1_kp_desc, descriptorAndKeypoi
 		}
 	}
 
-	printf("-- Max dist : %f \n", max_dist);
-	printf("-- Min dist : %f \n", min_dist);
+	cout << "-- Max dist : %f \n" << max_dist;
+	cout << "-- Min dist : %f \n" << min_dist;
 
 	//--Use only "good" matches (i.e. whose distance is less than 3 X min_dist )
 	vector<DMatch> good_matches;
