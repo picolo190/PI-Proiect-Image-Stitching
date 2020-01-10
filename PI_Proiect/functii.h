@@ -30,14 +30,14 @@ void checkImage(Mat img);
 	This function detects the keypoints from a given image and computes the descriptors 
 	based on the keypoints extracted previously.
 */
-descriptorAndKeypoints detectAndCompute(Mat img1);
+descriptorAndKeypoints detectAndCompute(Mat img1, string s);
 
 /*
 	The calculateHomography function takes 2 descriptorAndKeypoints as arguments, those represent the descriptors
 	and the keypoints for each image. Those descriptors are being matched using the FLANN method. The resulted matches are being filtred:
 	the ones > 3 * min_dist are dropped. The homography matrix is then calculated based on the RANSAC method.
 */
-Mat calculateHomography(descriptorAndKeypoints img1_kp_desc, descriptorAndKeypoints img2_kp_desc);
+Mat calculateHomography(descriptorAndKeypoints img1_kp_desc, descriptorAndKeypoints img2_kp_desc, Mat image_1, Mat image_2);
 
 /*
 	The stitchImage receives two images and the homography matrix. It tries to apply the homography to one on those images

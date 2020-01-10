@@ -3,7 +3,7 @@
 int main(void)
 {
 	//Read the images to be stitched
-	string image_name_1("Images/uni_1.jpeg"), image_name_2("Images/uni_2.jpeg");
+	string image_name_1("Images/Building_1.jpg"), image_name_2("Images/Building_2.jpg");
 	Mat image_1 = imread(image_name_1), image_2 = imread(image_name_2);
 
 	checkImage(image_1);
@@ -17,11 +17,13 @@ int main(void)
 	checkImage(gray_image_1);
 	checkImage(gray_image_2);
 
+	string path("Images/");
+
 	//Extract the descriptors and keypoints
-	descriptorAndKeypoints image1_desc_kp = detectAndCompute(gray_image_1), image2_desc_kp = detectAndCompute(gray_image_2);
+	descriptorAndKeypoints image1_desc_kp = detectAndCompute(gray_image_1, path+="img_with_desc1.png"), image2_desc_kp = detectAndCompute(gray_image_2, path += "img_with_desc2.png");
 
 	//Calculate the homography
-	Mat homography = calculateHomography(image1_desc_kp, image2_desc_kp);
+	Mat homography = calculateHomography(image1_desc_kp, image2_desc_kp, image_1, image_2);
 
 	//Stitch the images
 	Mat final_image = stitchImage(image_1, image_2, homography);
@@ -31,7 +33,7 @@ int main(void)
 
 	//Save the image as a file
 	bool ok = false;
-	string path("Images/");
+	
 
 	while (!ok) 
 	{
